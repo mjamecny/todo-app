@@ -123,7 +123,14 @@ const Close = styled.img`
   }
 `
 
-export default function Todo({ todo }) {
+export default function Todo({
+  todo,
+  onDragStart,
+  onDragOver,
+  onDragEnter,
+  onDragLeave,
+  onDrop,
+}) {
   const { isDarkMode } = useDarkMode()
   const { dispatch } = useTodos()
   const { text, done, id } = todo
@@ -147,7 +154,16 @@ export default function Todo({ todo }) {
   }, [])
 
   return (
-    <StyledTodo isDarkMode={isDarkMode} onClick={handleChange}>
+    <StyledTodo
+      isDarkMode={isDarkMode}
+      onClick={handleChange}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <TodoBox>
         <CheckboxContainer isDarkMode={isDarkMode}>
           <input

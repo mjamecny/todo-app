@@ -117,9 +117,12 @@ const NoTasks = styled.p`
 
 export default function App() {
   const { todos, dispatch } = useTodos()
-  const [filter, setFilter] = useState("all")
   const { isDarkMode, toggleDarkMode } = useDarkMode()
-  const uncompletedTodosNum = todos.filter((todo) => !todo.done).length
+
+  const [filter, setFilter] = useState("all")
+  const [dragItem, setDragItem] = useState()
+
+  const uncompletedTodosNum = todos?.filter((todo) => !todo.done).length
 
   function handleDeleteCompleted() {
     dispatch({ type: "deleteCompleted" })
@@ -129,11 +132,27 @@ export default function App() {
     setFilter(value)
   }
 
-  const filteredTodos = todos.filter((todo) => {
+  const filteredTodos = todos?.filter((todo) => {
     if (filter === "all") return true
     if (filter === "active") return !todo.done
     if (filter === "completed") return todo.done
   })
+
+  function handleDragStart(index) {
+    setDragItem(index)
+  }
+
+  function handleDragEnter(e, index) {
+    const newList = [...todos]
+    const item = newList[dragItem]
+    newList.splice(dragItem, 1)
+    newList.splice(index, 0, item)
+    setDragItem(index)
+    dispatch({ type: "setTodos", payload: newList })
+  }
+
+  const handleDragLeave = (e) => {}
+  const handleDrop = (e) => {}
 
   return (
     <StyledApp>
@@ -159,8 +178,18 @@ export default function App() {
           </Header>
           <Form />
           <Todos isDarkMode={isDarkMode}>
-            {filteredTodos.length > 0 ? (
-              filteredTodos.map((todo) => <Todo key={todo.id} todo={todo} />)
+            {filteredTodos?.length > 0 ? (
+              filteredTodos?.map((todo, index) => (
+                <Todo
+                  onDragStart={() => handleDragStart(index)}
+                  onDragEnter={(e) => handleDragEnter(e, index)}
+                  onDragLeave={(e) => handleDragLeave(e)}
+                  onDrop={(e) => handleDrop(e)}
+                  onDragOver={(e) => e.preventDefault()}
+                  key={todo.id}
+                  todo={todo}
+                />
+              ))
             ) : (
               <NoTasks isDarkMode={isDarkMode}>No tasks in this list</NoTasks>
             )}
