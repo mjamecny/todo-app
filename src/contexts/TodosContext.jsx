@@ -1,58 +1,61 @@
-import { createContext, useContext, useReducer } from "react"
+import { createContext, useContext, useEffect, useReducer } from "react"
 
 const TodosContext = createContext()
 
-const initialState = {
-  todos: [
-    {
-      id: 1,
-      text: "Complete online JavaScript course",
-      done: true,
-    },
-    {
-      id: 2,
-      text: "Jog around the park 3x",
-      done: false,
-    },
-    {
-      id: 3,
-      text: "10 minutes meditation",
-      done: false,
-    },
-  ],
-}
+const initialTodos = [
+  {
+    id: 1,
+    text: "Complete online JavaScript course",
+    done: true,
+  },
+  {
+    id: 2,
+    text: "Jog around the park 3x",
+    done: false,
+  },
+  {
+    id: 3,
+    text: "10 minutes meditation",
+    done: false,
+  },
+]
 
 function reducer(state, action) {
   switch (action.type) {
     case "addTask":
-      return {
-        todos: [action.payload, ...state.todos],
-      }
+      return [action.payload, ...state]
+
     case "checkTodo":
-      return {
-        todos: state.todos.map((todo) =>
+      return [
+        ...state.map((todo) =>
           todo.id === action.payload.id ? action.payload : todo
         ),
-      }
+      ]
     case "deleteTodo":
-      return {
-        todos: state.todos.filter((todo) => todo.id !== action.payload),
-      }
+      return [...state.filter((todo) => todo.id !== action.payload)]
+
     case "deleteCompleted":
-      return {
-        todos: state.todos.filter((todo) => !todo.done),
-      }
+      return [...state.filter((todo) => !todo.done)]
+
     case "setTodos":
-      return {
-        todos: action.payload,
-      }
+      return [action.payload]
+
     default:
       throw new Error("Unknown action")
   }
 }
 
 function TodosProvider({ children }) {
-  const [{ todos }, dispatch] = useReducer(reducer, initialState)
+  // Check if there is a stored state in localStorage
+  const storedState = JSON.parse(localStorage.getItem("todos"))
+
+  // Use the stored state if available, otherwise use the initial state
+  const [todos, dispatch] = useReducer(reducer, storedState || initialTodos)
+
+  // Update localStorage whenever the state changes
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos))
+  }, [todos])
 
   return (
     <TodosContext.Provider value={{ todos, dispatch }}>
